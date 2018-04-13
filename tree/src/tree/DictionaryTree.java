@@ -3,32 +3,55 @@ package tree;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Optional;
+
 
 public class DictionaryTree {
 	public static String line = "";
 	
-	public static String allFiles(File file, String tab, String sort) {
+	public static String allFiles(File file, String tab, String formatSize, String sort, String whatFirst) {
+		//initialize a tab
 		tab = tab == null ? "" : tab;
+		
+		//Check file
 		if(!file.exists())
 			System.out.print("File not found");
+		
+		//Make files list 
 		File[] list = file.listFiles();
-		if(sort != null) {
-			if(sort.compareTo("n") == 0) {
-				Arrays.sort(list, DictionaryTree.FileNameComparator);
-			} else if(sort.compareTo("s") == 0) {
-				Arrays.sort(list, DictionaryTree.FileSizeComparator);
+		
+		//Check list
+		if(list == null)
+			return file.getName();
+		
+		//Sort by name or size or whatFirst
+		if(sort != null && whatFirst != null) {
+			list = DictionaryTree.WhatFirst(list, sort, whatFirst);
+		} else if(whatFirst != null && sort == null) { 
+			list = DictionaryTree.WhatFirst(list, sort, whatFirst);
+		} else if(whatFirst == null && sort != null) {
+			DictionaryTree.Sort(list, sort);
+		}
+		
+		//Format of size and extension
+		long div = 1;
+		String format = "";
+		if(formatSize != null) {
+			if(formatSize.compareTo("b") == 0) {
+				format = "B";
+			} else if(formatSize.compareTo("m") == 0) {
+				format = "MB";
+				div = 1000000;
 			}
 		}
-		if(list == null)
-			return null;
+		
+		//make tree
 		for(File name : list) {
 			if(name.isDirectory()) {
-				line +=  tab + ">-" + name.getName() + " : " + FolderSize(name,0) + " byte\n";
+				line +=  tab + ">-" + name.getName() + " : " + FolderSize(name,0)/div + format +"\n";
 //				System.out.print(tab + ">-" + name.getName() + " : " + size + " byte\n");
-				allFiles(name, tab + "|  ", sort);
+				allFiles(name, tab + "|  ", formatSize, sort, whatFirst);
 			} else {
-				line += tab + "+--" + name.getName() + " : " + name.length() + " byte\n";
+				line += tab + "+--" + name.getName() + " : " + name.length()/div + format +"\n";
 //				System.out.print(tab + "+--" + name.getName() + " : " + name.length() + " byte\n");
 			}
 		}
@@ -48,11 +71,35 @@ public class DictionaryTree {
 			long size = 0;
 			if(f1.isDirectory() && f2.isDirectory()) {
 				return Long.compare(FolderSize(f1,size), FolderSize(f2,size));
+			} else if (f1.isDirectory() && !f2.isDirectory()){
+				return Long.compare(FolderSize(f1,size), f2.length());
+			} else if(!f1.isDirectory() && f2.isDirectory()) {
+				return Long.compare(f1.length(),FolderSize(f2,size));
 			} else {
 				return Long.compare(f1.length(), f2.length());
 			}
 		}
 	};
+	
+	//TODO
+//	public static Comparator<File> FileExtensionComparator = new Comparator<File>() {}
+	
+//	//TODO
+//	public static String getExtension(File f) {
+//		String extension = "";
+//		
+//		if(f.isDirectory()) {
+//			return "d";
+//		}
+//		
+//		int i = f.getName().lastIndexOf('.');
+//		int p = Math.max(f.getName().lastIndexOf('/'), f.getName().lastIndexOf('\\'));
+//		
+//		if(i > p)
+//			extension += f.getName().substring(i+1);
+//		
+//		return extension;
+//	}
 	
 	
 	public static long FolderSize(File f, long size) {
@@ -72,5 +119,62 @@ public class DictionaryTree {
 		return size;
 	}
 	
+	//TODO make to function for sort 
+	public static File[] WhatFirst(File[] list, String sort, String whatFirst) {
+		File[] fs = new File[list.length];
+		File[] dirs = new File[list.length];
+		File[] all = new File[list.length];
+		int last = 0;
+		int f = 0;
+		int d = 0;
+		for(File name : list) {
+			if(name.isDirectory()) {
+				dirs[d] = name;
+				d++;
+			} else {
+				fs[f] = name;
+				f++;
+			}
+		}
+		File[] allFs = Arrays.copyOf(fs, f);
+		File[] allDirs = Arrays.copyOf(dirs, d);
+		
+		//Sort
+		if(sort != null) {
+			DictionaryTree.Sort(allDirs, sort); 
+			DictionaryTree.Sort(allFs, sort);
+		} 
+		
+		if(whatFirst.compareTo("f") == 0) {
+			for(int i = 0; i < (f+d); i++) {
+				if(i < f) {
+					all[i] = allFs[i];
+				} else {
+					all[i] = allDirs[last];
+					last++;
+				}
+			}
+		} else if(whatFirst.compareTo("d") == 0) {
+			for(int i = 0; i < (f+d); i++) {
+				if(i < d) {
+					all[i] = allDirs[i];
+				} else {
+					all[i] = allFs[last];
+					last++;
+				}
+			}
+		}  else {
+			DictionaryTree.Sort(list, sort);
+			return list;
+		}
+		return all;
+	}
 	
+	public static void Sort(File[] list, String sort) {
+		if(sort.compareTo("n") == 0) {
+			Arrays.sort(list, DictionaryTree.FileNameComparator);
+		} else if(sort.compareTo("s") == 0) {
+			Arrays.sort(list, DictionaryTree.FileSizeComparator);
+		}
+	}
 }
