@@ -4,9 +4,9 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Comparator;
 
-
 public class DictionaryTree {
 	public static String line = "";
+	public static String ex = "";
 	
 	public static String allFiles(File file, String tab, String formatSize, String sort, String whatFirst) {
 		//initialize a tab
@@ -47,11 +47,13 @@ public class DictionaryTree {
 		//make tree
 		for(File name : list) {
 			if(name.isDirectory()) {
-				line +=  tab + ">-" + name.getName() + " : " + FolderSize(name,0)/div + format +"\n";
+				line +=  tab + ">-" + name.getName() + " : " + FolderSize(name,0)/div + format +" D\n";
 //				System.out.print(tab + ">-" + name.getName() + " : " + size + " byte\n");
 				allFiles(name, tab + "|  ", formatSize, sort, whatFirst);
 			} else {
-				line += tab + "+--" + name.getName() + " : " + name.length()/div + format +"\n";
+				ex = "";
+				ex = getExtension(name.getName());
+				line += tab + "+--" + getName(name,ex) + " : " + name.length()/div + format +" "+ ex +"\n";
 //				System.out.print(tab + "+--" + name.getName() + " : " + name.length() + " byte\n");
 			}
 		}
@@ -59,6 +61,9 @@ public class DictionaryTree {
 	}
 	
 	
+	public static String getName(File f, String ex) {
+		return f.getName().substring(0, (f.getName().length() - ex.length()));
+	}
 	
 	public static Comparator<File> FileNameComparator = new Comparator<File>() {
 		public int compare(File f1, File f2) {
@@ -84,22 +89,16 @@ public class DictionaryTree {
 	//TODO
 //	public static Comparator<File> FileExtensionComparator = new Comparator<File>() {}
 	
-//	//TODO
-//	public static String getExtension(File f) {
-//		String extension = "";
-//		
-//		if(f.isDirectory()) {
-//			return "d";
-//		}
-//		
-//		int i = f.getName().lastIndexOf('.');
-//		int p = Math.max(f.getName().lastIndexOf('/'), f.getName().lastIndexOf('\\'));
-//		
-//		if(i > p)
-//			extension += f.getName().substring(i+1);
-//		
-//		return extension;
-//	}
+	//TODO
+	public static String getExtension(String f) {
+		ex = f.substring(f.lastIndexOf('.')) + ex;
+		String nf = f.substring(0,f.lastIndexOf('.'));
+		if(nf.lastIndexOf('.') != -1) {
+			ex = "." + ex;
+			return getExtension(nf);
+		}		
+		return ex;
+	}
 	
 	
 	public static long FolderSize(File f, long size) {
