@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Comparator;
 
-public class DictionaryTree {
+public class Tree {
 	public static String line = "";
 	public static String ex = "";
 	
@@ -25,11 +25,11 @@ public class DictionaryTree {
 		
 		//Sort by name or size or whatFirst
 		if(sort != null && whatFirst != null) {
-			list = DictionaryTree.WhatFirst(list, sort, whatFirst);
+			list = Tree.WhatFirst(list, sort, whatFirst);
 		} else if(whatFirst != null && sort == null) { 
-			list = DictionaryTree.WhatFirst(list, sort, whatFirst);
+			list = Tree.WhatFirst(list, sort, whatFirst);
 		} else if(whatFirst == null && sort != null) {
-			DictionaryTree.Sort(list, sort);
+			Tree.Sort(list, sort);
 		}
 		
 		//Format of size and extension
@@ -140,8 +140,8 @@ public class DictionaryTree {
 		
 		//Sort
 		if(sort != null) {
-			DictionaryTree.Sort(allDirs, sort); 
-			DictionaryTree.Sort(allFs, sort);
+			Tree.Sort(allDirs, sort); 
+			Tree.Sort(allFs, sort);
 		} 
 		
 		if(whatFirst.compareTo("f") == 0) {
@@ -163,7 +163,7 @@ public class DictionaryTree {
 				}
 			}
 		}  else {
-			DictionaryTree.Sort(list, sort);
+			Tree.Sort(list, sort);
 			return list;
 		}
 		return all;
@@ -171,9 +171,9 @@ public class DictionaryTree {
 	
 	public static void Sort(File[] list, String sort) {
 		if(sort.compareTo("n") == 0) {
-			Arrays.sort(list, DictionaryTree.FileNameComparator);
+			Arrays.sort(list, Tree.FileNameComparator);
 		} else if(sort.compareTo("s") == 0) {
-			Arrays.sort(list, DictionaryTree.FileSizeComparator);
+			Arrays.sort(list, Tree.FileSizeComparator);
 		}
 	}
 }
